@@ -1,0 +1,19 @@
+%style (0:traj,1:bmax,2:prove b)
+1
+%mass (A BC)
+15.99491 14.00700 14.00700
+%coord (BC diatom)
+-1.442530580  0.256723710  0.000000000
+-2.540530580  0.256723710  0.000000000
+%deltH (kcal/mol)
+228.4
+%folder
+1
+%traj
+10000
+%R (START,RMAX,RBAR)
+11.0 15.0 4.0
+%ini (v, j, Ei)
+bbb ccc aaa
+%bmax
+ddd

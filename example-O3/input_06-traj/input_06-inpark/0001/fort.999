@@ -1,0 +1,19 @@
+      1 0.15871E-06 kcal/mol       3
+      2 0.18563E-06 kcal/mol       2
+      3 0.17881E-06 kcal/mol       3
+      4 0.18613E-06 kcal/mol       4
+      5 0.15435E-06 kcal/mol       2
+ +++++++++++++++++++++++++++++++++++++++++
+ TOTAL effective Trajectories:            5
+ Non-reactive traj number:                0
+ Reactive 2 traj number:                  2
+ Reactive 3 traj number:                  2
+ Reactive 4 traj number:                  1
+ Reactive 5 traj number:                  0
+ Reactive 6 traj number:                  0
+ Reactive 7 traj number:                  0
+ Reactive 8 traj number:                  0
+ Reactive 9 traj number:                  0
+ Reactive 10 traj number:                 0
+ traj with too long time:                 0
+ +++++++++++++++++++++++++++++++++++++++++
