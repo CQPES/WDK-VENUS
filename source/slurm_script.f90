@@ -6,9 +6,10 @@ character*100 finp,frun,fout,sii
 open(130,file=frun)
 
 write(130,'(a)')'#!/bin/bash'
-write(130,'(a)')'#SBATCH -J '//'O3-1AP-'//trim(sii)
+write(130,'(a)')'#SBATCH -J '//'O3-5AP-'//trim(sii)
 write(130,'(a)')'#SBATCH --time=720:00:00'
 write(130,'(a)')'#SBATCH -N 1 '
+write(130,'(a)')'#SBATCH -p gworkq '
 write(130,'(a)')'#SBATCH --ntasks-per-node=2'
 write(130,'(a)')' '
 write(130,'(a)')'ulimit -d unlimited'

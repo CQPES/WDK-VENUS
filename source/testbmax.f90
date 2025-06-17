@@ -1,6 +1,7 @@
-subroutine testbmax(input, traj, du)  
+subroutine testbmax(input, traj, channel, du)  
   implicit none  
-  integer :: i, linum, traj, firstnum, lastnum, du, io_stat  
+  integer :: i, linum, traj, firstnum, lastnum, du, io_stat
+  integer :: channel
   character(100) :: line, kt1  
   character(80) :: input  
   logical :: end_of_file  
@@ -26,27 +27,67 @@ subroutine testbmax(input, traj, du)
     read(line, '(I7,A21,I8)') firstnum, kt1, lastnum  
   
     !Checking reaction paths
-    !if (io_stat >= 0 .AND. lastnum == 2 .OR. lastnum == 3) then  
-    if (io_stat >= 0 .AND. lastnum == 4) then  
-      call execute_command_line('./'//trim(input)//'-inpark/scancel.x')  
-      call execute_command_line('rm -r ./'//trim(input)//'-inpark/0001/*.log')  
-      call execute_command_line('rm -r ./'//trim(input)//'-inpark/0001/*.out')  
-      du = 0  
-      exit  
-    !elseif (io_stat >= 0 .AND. lastnum /= 2 .AND. lastnum /= 3) then
-    elseif (io_stat >= 0 .AND. lastnum /= 4) then
-      if (io_stat > 0 .AND. firstnum < traj) then  
-        end_of_file = .true.  
-        close(10)  
-        call execute_command_line('sleep 5s')  
-        goto 8  
-      elseif (io_stat > 0 .AND. firstnum == traj) then  
-        end_of_file = .true.  
-        close(10)  
-        du = 1  
+    if (channel == 0) then !all path
+      if (io_stat >= 0 .AND. lastnum == 2 .OR. lastnum == 3 .OR. lastnum == 4) then    
+        call execute_command_line('./'//trim(input)//'-inpark/scancel.x')  
+        call execute_command_line('rm -r ./'//trim(input)//'-inpark/0001/*.log')  
+        call execute_command_line('rm -r ./'//trim(input)//'-inpark/0001/*.out')  
+        du = 0  
         exit  
-      endif  
-    endif  
+      elseif (io_stat >= 0 .AND. lastnum /= 2 .AND. lastnum /= 3 .AND. lastnum /= 4) then
+        if (io_stat > 0 .AND. firstnum < traj) then  
+          end_of_file = .true.  
+          close(10)  
+          call execute_command_line('sleep 5s')  
+          goto 8  
+        elseif (io_stat > 0 .AND. firstnum == traj) then  
+          end_of_file = .true.  
+          close(10)  
+          du = 1  
+          exit  
+        endif  
+      endif
+    elseif (channel == 1) then !displacement path
+      if (io_stat >= 0 .AND. lastnum == 2 .OR. lastnum == 3) then    
+        call execute_command_line('./'//trim(input)//'-inpark/scancel.x')  
+        call execute_command_line('rm -r ./'//trim(input)//'-inpark/0001/*.log')  
+        call execute_command_line('rm -r ./'//trim(input)//'-inpark/0001/*.out')  
+        du = 0  
+        exit  
+      elseif (io_stat >= 0 .AND. lastnum /= 2 .AND. lastnum /= 3) then
+        if (io_stat > 0 .AND. firstnum < traj) then  
+          end_of_file = .true.  
+          close(10)  
+          call execute_command_line('sleep 5s')  
+          goto 8  
+        elseif (io_stat > 0 .AND. firstnum == traj) then  
+          end_of_file = .true.  
+          close(10)  
+          du = 1  
+          exit  
+        endif  
+      endif
+    elseif (channel == 2) then !dissociation channel  
+      if (io_stat >= 0 .AND. lastnum == 4) then  
+        call execute_command_line('./'//trim(input)//'-inpark/scancel.x')  
+        call execute_command_line('rm -r ./'//trim(input)//'-inpark/0001/*.log')  
+        call execute_command_line('rm -r ./'//trim(input)//'-inpark/0001/*.out')  
+        du = 0  
+        exit
+      elseif (io_stat >= 0 .AND. lastnum /= 4) then
+        if (io_stat > 0 .AND. firstnum < traj) then  
+          end_of_file = .true.  
+          close(10)  
+          call execute_command_line('sleep 5s')  
+          goto 8  
+        elseif (io_stat > 0 .AND. firstnum == traj) then  
+          end_of_file = .true.  
+          close(10)  
+          du = 1  
+          exit  
+        endif  
+      endif
+    endif
   end do  
   
   !close the input file  

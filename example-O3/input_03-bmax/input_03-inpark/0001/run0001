@@ -1,0 +1,30 @@
+#!/bin/bash
+#SBATCH -J O3-5AP-0001
+#SBATCH --time=720:00:00
+#SBATCH -N 1 
+#SBATCH -p gworkq 
+#SBATCH --ntasks-per-node=2
+ 
+ulimit -d unlimited
+ulimit -s unlimited
+ulimit -t unlimited
+ulimit -v unlimited
+ 
+ 
+cd $SLURM_SUBMIT_DIR
+username=`whoami`
+ 
+ 
+VENUS_TMPDIR=/tmp/${username}.$SLURM_JOBID
+if [ ! -a $VENUS_TMPDIR ]; then
+   mkdir -p $VENUS_TMPDIR
+fi
+export VENUS_TMPDIR
+ 
+echo "Starting Venus run at `hostname` on ${SLURM_JOB_NODELIST}:" `date` > ${SLURM_JOB_ID}.log
+ 
+srun -n 1 -c $SLURM_NTASKS ./venus-E.e < inp0001 > out0001
+ 
+echo "Finished Venus run on ${SLURM_JOB_NODELIST}:" `date` >> ${SLURM_JOB_ID}.log
+ 
+rm -rf $VENUS_TMPDIR 

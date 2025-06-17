@@ -9,11 +9,11 @@ program main
 use commondata
 
 implicit none
-integer i,style,traj,folder,n,j,du
+integer i,style,traj,folder,n,j,du,channel
 real*8 xseed
-real*8 bmax,Et,RMAX,RBAR,S,mA,mB,mC
-real*8 dH,cD,cE,cF,cG,cH,cI
-character(100) :: ftmp
+real*8 bmax,Et,dH,RMAX,RBAR,S,mw(3)
+real*8 xyz(3,3)
+character*100 ftmp
 character(100) :: cmd
 character(10) :: opinion
 character(80) :: inp_name
@@ -28,15 +28,12 @@ end if
 
 ! stop
 
-call ReadInputFile(inp_name,style,traj,folder,n,j,Et,bmax,RMAX,RBAR,S,dH,mA,mB,mC,cD,cE,cF,cG,cH,cI)
+call ReadInputFile(inp_name,style,channel,traj,folder,n,j,Et,bmax,RMAX,RBAR,S,dH,mw,xyz)
 
 5 fsbatch='sbatch.sc'
 open(105,file=fsbatch)
 
-!########################################################
-ftmp='cp /home/jwyang/WDK-VENUS/'   !change for your dict ##
-!########################################################
-
+ftmp='cp /home/jwyang/O3-test-QCT/'   !change for your dict
 fcpinp='script.cp' 
 open(101,file=fcpinp)
 write(101,'(a)')trim(ftmp)//'new/venus-E.e ./'
@@ -52,10 +49,10 @@ do i=1,folder !nfile
   call random_number(xseed)
   if (style == 2) then
     style = style - 1
-    call writeinp(i,xseed,style,traj,folder,n,j,Et,bmax,inp_name,RMAX,RBAR,S,dH,mA,mB,mC,cD,cE,cF,cG,cH,cI)
+    call writeinp(i,xseed,style,channel,traj,folder,n,j,Et,bmax,inp_name,RMAX,RBAR,S,dH,mw,xyz)
     style = style + 1
   else
-    call writeinp(i,xseed,style,traj,folder,n,j,Et,bmax,inp_name,RMAX,RBAR,S,dH,mA,mB,mC,cD,cE,cF,cG,cH,cI)
+    call writeinp(i,xseed,style,channel,traj,folder,n,j,Et,bmax,inp_name,RMAX,RBAR,S,dH,mw,xyz)
   endif
 enddo
 
@@ -83,7 +80,7 @@ if (style == 1) then
    write(106,'(a,f5.1)') "(*.*)zzz---wait---",bmax
    call execute_command_line('sleep 90s')
 
-   call testbmax(inp_name,traj,du)
+   call testbmax(inp_name,traj,channel,du)
    if (du == 0) then
         call execute_command_line("rm -r sbatch.sc script.cp")
         bmax=bmax+0.1d0
@@ -102,17 +99,17 @@ endif
 end program main
 
 
-subroutine writeinp(ii,xseed,style,traj,folder,n,j,Et,bmax,inp_name,RMAX,RBAR,S,dH,mA,mB,mC,cD,cE,cF,cG,cH,cI)
+subroutine writeinp(ii,xseed,style,channel,traj,folder,n,j,Et,bmax,inp_name,RMAX,RBAR,S,dH,mw,xyz)
 implicit none
 
-integer ii,style,traj,n,j,folder
+integer ii,style,traj,n,j,folder,channel
 character*100 finp,sii,sx,sy,frun,srun,fout
 character*80 inp_name
 integer*8 nseed
 real*8 xseed
 real*8 bmax,Et,RMAX,RBAR,S
-real*8 mA,mB,mC,dH
-real*8 cD,cE,cF,cG,cH,cI
+real*8 mw(3),dH
+real*8 xyz(3,3)
 
 nseed=1.0d9*dabs(dsqrt(xseed))
 
@@ -187,7 +184,7 @@ write(120,'(a)')'ATB--CQU'
 write(120,'(a)')'3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,0,0,0,0,0,'
 write(120,'(a)')'0.0,'   !vzero
 write(120,'(a)')'2,0,'   !NSELT,NCHKP
-write(120,'(F8.5,",",F8.5,",",F8.5)') mA,mB,mC   !mass weight in au O+O2 = O2+O 15.99491,15.99491,15.99491
+write(120,'(F8.5,",",F8.5,",",F8.5)') mw(1),mw(2),mw(3)   !mass weight in au O+O2 = O2+O 15.99491,15.99491,15.99491
 write(120,'(I0,",",a)') traj,'1000000,100,200,'   !NT,NS,NIP,NCROT
 write(120,'(a)')'0.005'   !time step
 write(sx,*)nseed
@@ -198,12 +195,12 @@ write(120,'(a)')'0,0,'//trim(sy)//','   !NACTA,NACTB,ISEED
 !write(120,'(a)')'5,5,'//trim(sy)//','   !NACTA,NACTB,ISEED, thermal sampling
 !write(120,'(a)')'0.001,2,'   ! HINC, NPTS
 write(120,'(a)')'1,0,'       ! NATOMA, NLINA
-write(120,'(a)')'0.0000000000, 0.0000000000, 0.0000000000'!coordinate for O
+write(120,'(F13.10,",",F13.10,",",F13.10)') xyz(:,1)!coordinate for O
 !write(120,'(a)')'0,0,'   ! diatomic number of vibrational quanta and diatomic number of rotational quanta
 ! write(120,'(a)')'1000.0,0.2770222,0,0,' ! N,J -->diatomic number of vibrational quanta and diatomic number of rotational quanta
 write(120,'(a)')'2,1,'   !NATOMB, NLINB
-write(120,'(F13.10,",",F13.10,",",F13.10)') cD,cE,cF !coordinate for O -1.3875305800,0.2567237100,0.0000000000
-write(120,'(F13.10,",",F13.10,",",F13.10)') cG,cH,cI !coordinate for O -2.5955305800,0.2567237100,0.0000000000
+write(120,'(F13.10,",",F13.10,",",F13.10)') xyz(:,2) !coordinate for O -1.3875305800,0.2567237100,0.0000000000
+write(120,'(F13.10,",",F13.10,",",F13.10)') xyz(:,3) !coordinate for O -2.5955305800,0.2567237100,0.0000000000
 write(120,'(I0,",",I0)') n, j! 2-atom-n,j/3-atom-ground state, all v=0, increasing frequencies
 !write(120,'(a)')'1,106.0,'   ! rotational
 ! write(120,'(a)')'1000.0,'   ! TVIB -->vibrational temperature for Boltzmann distribution
@@ -217,26 +214,26 @@ write(120,'(a)')'3,' !NPATHS, other reaction paths except for reagent A and reag
 write(120,'(F4.1,",",F4.1,a)')RMAX,RBAR,',1,2,0.0,' !rmax(2),rbar(2),NATOMA(2),NATOMB(2),delH(2)
 write(120,'(a)')'1,4'   !NABJ(2),NABK(2)
 write(120,'(a)')'2'   !index for atomic numbers for fragment A
-write(120,'(F13.10,",",F13.10,",",F13.10)') cD,cE,cF !xyz for fragment 0
+write(120,'(F13.10,",",F13.10,",",F13.10)') xyz(:,2) !xyz for fragment 0
 write(120,'(a)')'1,3'   !index for atomic numbers for fragment B
-write(120,'(a)')' 0.0000000000, 0.0000000000, 0.0000000000'!xyz for fragment O
-write(120,'(F13.10,",",F13.10,",",F13.10)') cG,cH,cI !xyz for fragment O
+write(120,'(F13.10,",",F13.10,",",F13.10)') xyz(:,1) !xyz for fragment O
+write(120,'(F13.10,",",F13.10,",",F13.10)') xyz(:,3) !xyz for fragment O
  
 write(120,'(F4.1,",",F4.1,a)')RMAX,RBAR,',1,2,0.0,' !rmax(2),rbar(2),NATOMA(2),NATOMB(2),delH(2)
 write(120,'(a)')'1,4'   !NABJ(2),NABK(2)
 write(120,'(a)')'3'   !index for atomic numbers for fragment A
-write(120,'(F13.10,",",F13.10,",",F13.10)') cG,cH,cI !xyz for fragment O
+write(120,'(F13.10,",",F13.10,",",F13.10)') xyz(:,3) !xyz for fragment O
 write(120,'(a)')'1,2'   !index for atomic numbers for fragment B
-write(120,'(a)')' 0.0000000000, 0.0000000000, 0.0000000000'!xyz for fragment O
-write(120,'(F13.10,",",F13.10,",",F13.10)') cD,cE,cF !xyz for fragment O
+write(120,'(F13.10,",",F13.10,",",F13.10)') xyz(:,1) !xyz for fragment O
+write(120,'(F13.10,",",F13.10,",",F13.10)') xyz(:,2) !xyz for fragment O
 
 write(120,'(F4.1,",",F4.1,a,",",F5.1)')RMAX,RBAR,',1,2',dH !rmax(2),rbar(2),NATOMA(2),NATOMB(2),delH(2)
 write(120,'(a)')'1,4'   !NABJ(2),NABK(2)
 write(120,'(a)')'1'   !index for atomic numbers for fragment A
-write(120,'(a)')' 0.0000000000, 0.0000000000, 0.0000000000'!xyz for fragment O
+write(120,'(F13.10,",",F13.10,",",F13.10)') xyz(:,1) !xyz for fragment O
 write(120,'(a)')'2,3'   !index for atomic numbers for fragment B
-write(120,'(F13.10,",",F13.10,",",F13.10)') cD,cE,cF !xyz for fragment O
-write(120,'(F13.10,",",F13.10,",",F13.10)') cG,cH,cI !xyz for fragment O
+write(120,'(F13.10,",",F13.10,",",F13.10)') xyz(:,2) !xyz for fragment O
+write(120,'(F13.10,",",F13.10,",",F13.10)') xyz(:,3) !xyz for fragment O
 
 
 ! write(120,'(a)')'50.0,10.0,5,0,-2.304,'!RMAX(2),RBAR(2),NATOMA(2),NATOMB(2),delH(2)

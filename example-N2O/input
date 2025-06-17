@@ -1,8 +1,11 @@
 %style (0:traj,1:bmax,2:prove b)
-1
+2
+%channel (0:all, 1:replacement, 2:dissociation)
+2
 %mass (A BC)
 15.99491 14.00700 14.00700
-%coord (BC diatom)
+%coord (VENUS)
+ 0.000000000  0.000000000  0.000000000
 -1.442530580  0.256723710  0.000000000
 -2.540530580  0.256723710  0.000000000
 %deltH (kcal/mol)
